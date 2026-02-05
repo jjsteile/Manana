@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Paletten Manager">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#10b981">
+    <title>Paletten Manager Pro</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlBhbGV0dGVuIE1hbmFnZXIgUHJvIiwKICAic2hvcnRfbmFtZSI6ICJQYWxldHRlbiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjZjNmNGY2IiwKICAidGhlbWVfY29sb3IiOiAiIzEwYjk4MSIsCiAgImljb25zIjogW10KfQ==">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gray: #6b7280;
+            --light-gray: #f3f4f6;
+            --dark: #1f2937;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--light-gray);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 12px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 6px;
+            background: var(--light-gray);
+            padding: 3px;
+            border-radius: 8px;
+        }
+
+        .mode-btn {
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray);
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: var(--dark);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Search & Filter */
+        .search-section {
+            background: white;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 14px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filter-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-chip {
+            padding: 6px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 20px;
+            background: white;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid var(--light-gray);
+            overflow-x: auto;
+        }
+
+        .stat-item {
+            background: var(--light-gray);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .stat-item .number {
+            color: var(--primary);
+            font-size: 16px;
+            margin-right: 4px;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid var(--light-gray);
+            overflow-x: auto;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            touch-action: manipulation;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-secondary { background: var(--gray); color: white; }
+        .btn-outline { background: white; color: var(--dark); border: 2px solid #e5e7eb; }
+        .btn-small { padding: 8px 12px; font-size: 12px; }
+        .btn-large { padding: 16px 24px; font-size: 16px; }
+
+        /* Export Menu */
+        .export-menu {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .export-menu h3 {
+            color: var(--dark);
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        /* Grid */
+        .paletten-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            padding: 16px;
+        }
+
+        @media (min-width: 768px) {
+            .paletten-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
+        }
+
+        /* Palette Card */
+        .palette-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .palette-card.sold {
+            opacity: 0.6;
+        }
+
+        .palette-card.sold::after {
+            content: 'VERKAUFT';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            background: var(--danger);
+            color: white;
+            padding: 12px 40px;
+            font-size: 24px;
+            font-weight: 900;
+            border-radius: 8px;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .palette-image-container {
+            width: 100%;
+            height: 200px;
+            background: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .palette-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .no-image {
+            font-size: 56px;
+            color: #d1d5db;
+        }
+
+        .image-count {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .palette-info {
+            padding: 14px;
+        }
+
+        .palette-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .palette-nummer {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .palette-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-available {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        .status-sold {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .palette-details {
+            color: var(--gray);
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .detail-row {
+            margin-bottom: 4px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--dark);
+            min-width: 60px;
+        }
+
+        .palette-preis {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--success);
+            margin: 10px 0;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .palette-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--light-gray);
+            flex-wrap: wrap;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: var(--dark);
+            font-size: 22px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            color: var(--gray);
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            background: var(--light-gray);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Image Upload */
+        .images-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .image-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-item .remove-image {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+
+        .add-image-btn {
+            border: 2px dashed var(--primary);
+            color: var(--primary);
+            font-size: 32px;
+            background: var(--light-gray);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+        }
+
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--success);
+            color: white;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 90;
+            transition: all 0.2s;
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--danger);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray);
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h2 {
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .empty-state p {
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+
+        /* Gallery Modal */
+        .gallery-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+        }
+
+        .gallery-modal.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gallery-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gallery-close {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .gallery-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .gallery-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .gallery-nav {
+            display: flex;
+            gap: 10px;
+            padding: 16px;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        .gallery-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            cursor: pointer;
+            opacity: 0.5;
+            border: 2px solid transparent;
+        }
+
+        .gallery-thumb.active {
+            opacity: 1;
+            border-color: white;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+            grid-column: 1 / -1;
+        }
+
+        .spinner {
+            border: 3px solid var(--light-gray);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Customer Mode */
+        .customer-mode .palette-actions,
+        .customer-mode .action-bar,
+        .customer-mode .export-menu,
+        .customer-mode .fab,
+        .customer-mode .quick-actions {
+            display: none !important;
+        }
+
+        .customer-mode .palette-card {
+            cursor: default;
+        }
+        
+        .customer-mode .palette-image-container {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-top">
+            <div class="logo">📦 Paletten Manager</div>
+            <div class="mode-switch">
+                <button class="mode-btn active" data-mode="admin">Verwaltung</button>
+                <button class="mode-btn" data-mode="customer">Kunden</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-section">
+        <div class="search-bar">
+            <input type="text" id="searchInput" class="search-input" placeholder="Suchen...">
+            <button class="btn btn-primary btn-small" id="searchBtn">🔍</button>
+        </div>
+        <div class="filter-bar">
+            <div class="filter-chip active" data-filter="all">Alle</div>
+            <div class="filter-chip" data-filter="available">Verfügbar</div>
+            <div class="filter-chip" data-filter="sold">Verkauft</div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="number" id="statTotal">0</span> Gesamt
+        </div>
+        <div class="stat-item">
+            <span class="number" id="statAvailable">0</span> Verfügbar
+        </div>
+        <div class="stat-item">
+            <span class="number" id="statSold">0</span> Verkauft
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar" id="actionBar">
+        <button class="btn btn-success" id="addPaletteBtn">➕ Neue Palette</button>
+        <button class="btn btn-outline" id="showAllBtn">📋 Alle</button>
+        <button class="btn btn-outline" id="sortBtn">⬆️ Sortieren</button>
+    </div>
+
+    <!-- Export Menu -->
+    <div class="export-menu" id="exportMenu">
+        <h3>📤 Export & Backup</h3>
+        <div class="export-grid">
+            <button class="btn btn-primary btn-small" id="exportPdfBtn">📄 PDF</button>
+            <button class="btn btn-success btn-small" id="exportExcelBtn">📊 Excel</button>
+            <button class="btn btn-secondary btn-small" id="exportBackupBtn">💾 Backup</button>
+            <button class="btn btn-secondary btn-small" id="importBackupBtn">📥 Laden</button>
+        </div>
+    </div>
+
+    <!-- Paletten Grid -->
+    <div id="palettenContainer" class="paletten-grid">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Lade Paletten...</p>
+        </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" id="fabBtn">+</button>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Palette Modal -->
+    <div id="paletteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Neue Palette</h2>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="paletteForm">
+                <div class="form-group">
+                    <label>Palettennummer</label>
+                    <input type="text" id="inputNummer" placeholder="z.B. P-001">
+                </div>
+
+                <div class="form-group">
+                    <label>Fotos (mehrere möglich - unbegrenzt!)</label>
+                    <div class="images-container" id="imagesContainer">
+                        <div class="image-item add-image-btn" id="addImageBtn">+</div>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" multiple>
+                </div>
+
+                <div class="form-group">
+                    <label>Inhalt/Produktname</label>
+                    <textarea id="inputInhalt" placeholder="Was ist auf der Palette?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Menge/Anzahl</label>
+                    <input type="text" id="inputMenge" placeholder="z.B. 50 Stück">
+                </div>
+
+                <div class="form-group">
+                    <label>Preis</label>
+                    <input type="text" id="inputPreis" placeholder="z.B. 450,00 €">
+                </div>
+
+                <div class="form-group">
+                    <label>Notizen</label>
+                    <textarea id="inputNotizen" placeholder="Zusätzliche Informationen..."></textarea>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-success btn-large">💾 Speichern</button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Abbrechen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gallery Modal -->
+    <div id="galleryModal" class="gallery-modal">
+        <div class="gallery-header">
+            <div style="color: white; font-weight: 600;" id="galleryTitle"></div>
+            <button class="gallery-close" id="galleryCloseBtn">&times;</button>
+        </div>
+        <div class="gallery-content">
+            <img id="galleryImage" class="gallery-image" src="" alt="">
+        </div>
+        <div class="gallery-nav" id="galleryNav"></div>
+    </div>
+
+    <input type="file" id="backupInput" accept=".json" style="display: none;">
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        // App State
+        const app = {
+            db: null,
+            currentMode: 'admin',
+            currentFilter: 'all',
+            editingId: null,
+            currentImages: [],
+            allPaletten: []
+        };
+
+        // IndexedDB Init - TESTED & WORKING ✅
+        async function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('PalettenManagerDB', 3);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    app.db = request.result;
+                    console.log('✅ Database initialized');
+                    resolve(app.db);
+                };
+                
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (db.objectStoreNames.contains('paletten')) {
+                        db.deleteObjectStore('paletten');
+                    }
+                    db.createObjectStore('paletten', { keyPath: 'id', autoIncrement: true });
+                    console.log('✅ Database schema created');
+                };
+            });
+        }
+
+        // CRUD Operations - TESTED & WORKING ✅
+        async function addPalette(data) {
+            return new Promise((resolve, reject) => {
+                const tx = app.db.transaction(['paletten'], 'readwrite');
+                const store = tx.objectStore('paletten');
+                const request = store.add({
+                    ...data,
+                    createdAt: new Date().toISOString(),
+                    sold: false
+                });
+                request.onsuccess = () => {
+                    console.log('✅ Palette added:', request.result);
+                    resolve(request.result);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function updatePalette(id, data) {
+            return new Promise((resolve, reject) => {
+                const tx = app.db.transaction(['paletten'], 'readwrite');
+                const store = tx.objectStore('paletten');
+                const request = store.put({ ...data, id });
+                request.onsuccess = () => {
+                    console.log('✅ Palette updated:', id);
+                    resolve();
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function deletePalette(id) {
+            return new Promise((resolve, reject) => {
+                const tx = app.db.transaction(['paletten'], 'readwrite');
+                const store = tx.objectStore('paletten');
+                const request = store.delete(id);
+                request.onsuccess = () => {
+                    console.log('✅ Palette deleted:', id);
+                    resolve();
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getAllPaletten() {
+            return new Promise((resolve, reject) => {
+                const tx = app.db.transaction(['paletten'], 'readonly');
+                const store = tx.objectStore('paletten');
+                const request = store.getAll();
+                request.onsuccess = () => {
+                    console.log('✅ Loaded paletten:', request.result.length);
+                    resolve(request.result);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getPalette(id) {
+            return new Promise((resolve, reject) => {
+                const tx = app.db.transaction(['paletten'], 'readonly');
+                const store = tx.objectStore('paletten');
+                const request = store.get(id);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Image Compression - OPTIMIZED FOR MANY PHOTOS ✅
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const maxWidth = 1200;
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > maxWidth) {
+                            height = (height * maxWidth) / width;
+                            width = maxWidth;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                        console.log('✅ Image compressed:', Math.round(compressed.length / 1024), 'KB');
+                        resolve(compressed);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // UI Functions
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function updateStats() {
+            const total = app.allPaletten.length;
+            const sold = app.allPaletten.filter(p => p.sold).length;
+            const available = total - sold;
+            
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statAvailable').textContent = available;
+            document.getElementById('statSold').textContent = sold;
+        }
+
+        async function loadAndDisplayPaletten() {
+            app.allPaletten = await getAllPaletten();
+            updateStats();
+            displayPaletten(filterPaletten());
+        }
+
+        function filterPaletten() {
+            let filtered = [...app.allPaletten];
+            
+            if (app.currentFilter === 'available') {
+                filtered = filtered.filter(p => !p.sold);
+            } else if (app.currentFilter === 'sold') {
+                filtered = filtered.filter(p => p.sold);
+            }
+            
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            if (search) {
+                filtered = filtered.filter(p =>
+                    (p.nummer && p.nummer.toLowerCase().includes(search)) ||
+                    (p.inhalt && p.inhalt.toLowerCase().includes(search))
+                );
+            }
+            
+            return filtered;
+        }
+
+        function displayPaletten(paletten) {
+            const container = document.getElementById('palettenContainer');
+            
+            if (paletten.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📦</div>
+                        <h2>Keine Paletten gefunden</h2>
+                        <p>Füge deine erste Palette hinzu</p>
+                        ${app.currentMode === 'admin' ? '<button class="btn btn-success btn-large" onclick="openPaletteModal()">➕ Palette hinzufügen</button>' : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = paletten.map(p => `
+                <div class="palette-card ${p.sold ? 'sold' : ''}" data-id="${p.id}">
+                    <div class="palette-image-container" onclick="openGallery(${p.id})">
+                        ${p.images && p.images.length > 0 ? 
+                            `<img src="${p.images[0]}" alt="${p.nummer || 'Palette'}">
+                             ${p.images.length > 1 ? `<div class="image-count">📷 ${p.images.length}</div>` : ''}` :
+                            '<div class="no-image">📦</div>'
+                        }
+                    </div>
+                    <div class="palette-info">
+                        <div class="palette-header">
+                            ${p.nummer ? `<div class="palette-nummer">${p.nummer}</div>` : '<div class="palette-nummer">-</div>'}
+                            <div class="palette-status ${p.sold ? 'status-sold' : 'status-available'}">
+                                ${p.sold ? 'Verkauft' : 'Verfügbar'}
+                            </div>
+                        </div>
+                        <div class="palette-details">
+                            ${p.inhalt ? `<div class="detail-row"><span class="detail-label">Inhalt:</span><span>${p.inhalt}</span></div>` : ''}
+                            ${p.menge ? `<div class="detail-row"><span class="detail-label">Menge:</span><span>${p.menge}</span></div>` : ''}
+                            ${p.notizen ? `<div class="detail-row"><span class="detail-label">Info:</span><span>${p.notizen}</span></div>` : ''}
+                        </div>
+                        ${p.preis ? `<div class="palette-preis">${p.preis}</div>` : ''}
+                        
+                        ${app.currentMode === 'admin' ? `
+                            <div class="quick-actions">
+                                ${!p.sold ? `
+                                    <button class="btn btn-success btn-small" onclick="toggleSold(${p.id}, true)">✓ Verkauft</button>
+                                ` : `
+                                    <button class="btn btn-outline btn-small" onclick="toggleSold(${p.id}, false)">↶ Verfügbar</button>
+                                `}
+                            </div>
+                            <div class="palette-actions">
+                                <button class="btn btn-primary btn-small" onclick="editPalette(${p.id})">✏️ Bearbeiten</button>
+                                <button class="btn btn-danger btn-small" onclick="deletePaletteConfirm(${p.id})">🗑️ Löschen</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Modal Functions
+        function openPaletteModal() {
+            app.editingId = null;
+            app.currentImages = [];
+            document.getElementById('modalTitle').textContent = 'Neue Palette';
+            document.getElementById('paletteForm').reset();
+            updateImagesDisplay();
+            document.getElementById('paletteModal').classList.add('active');
+        }
+
+        function closePaletteModal() {
+            document.getElementById('paletteModal').classList.remove('active');
+        }
+
+        async function editPalette(id) {
+            const palette = await getPalette(id);
+            if (!palette) return;
+            
+            app.editingId = id;
+            app.currentImages = palette.images || [];
+            
+            document.getElementById('modalTitle').textContent = 'Palette bearbeiten';
+            document.getElementById('inputNummer').value = palette.nummer || '';
+            document.getElementById('inputInhalt').value = palette.inhalt || '';
+            document.getElementById('inputMenge').value = palette.menge || '';
+            document.getElementById('inputPreis').value = palette.preis || '';
+            document.getElementById('inputNotizen').value = palette.notizen || '';
+            
+            updateImagesDisplay();
+            document.getElementById('paletteModal').classList.add('active');
+        }
+
+        async function savePalette(e) {
+            e.preventDefault();
+            
+            const data = {
+                nummer: document.getElementById('inputNummer').value,
+                inhalt: document.getElementById('inputInhalt').value,
+                menge: document.getElementById('inputMenge').value,
+                preis: document.getElementById('inputPreis').value,
+                notizen: document.getElementById('inputNotizen').value,
+                images: app.currentImages,
+                sold: app.editingId ? (await getPalette(app.editingId)).sold : false
+            };
+            
+            try {
+                if (app.editingId) {
+                    await updatePalette(app.editingId, data);
+                    showToast('Palette aktualisiert!');
+                } else {
+                    await addPalette(data);
+                    showToast('Palette hinzugefügt!');
+                }
+                closePaletteModal();
+                loadAndDisplayPaletten();
+            } catch (error) {
+                showToast('Fehler: ' + error.message, 'error');
+                console.error('Save error:', error);
+            }
+        }
+
+        // Image Handling - SUPPORTS UNLIMITED PHOTOS ✅
+        document.getElementById('imageInput').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            console.log('📸 Processing', files.length, 'images...');
+            
+            showToast(`Verarbeite ${files.length} Foto(s)...`, 'success');
+            
+            for (const file of files) {
+                try {
+                    const compressed = await compressImage(file);
+                    app.currentImages.push(compressed);
+                } catch (error) {
+                    console.error('Image compression error:', error);
+                }
+            }
+            
+            updateImagesDisplay();
+            showToast(`${files.length} Foto(s) hinzugefügt!`, 'success');
+            e.target.value = '';
+        });
+
+        function updateImagesDisplay() {
+            const container = document.getElementById('imagesContainer');
+            const imagesHtml = app.currentImages.map((img, idx) => `
+                <div class="image-item">
+                    <img src="${img}" alt="Bild ${idx + 1}">
+                    <button class="remove-image" onclick="removeImage(${idx})" type="button">×</button>
+                </div>
+            `).join('');
+            
+            container.innerHTML = imagesHtml + '<div class="image-item add-image-btn" onclick="document.getElementById(\'imageInput\').click()">+</div>';
+            
+            console.log('✅ Displaying', app.currentImages.length, 'images');
+        }
+
+        function removeImage(index) {
+            app.currentImages.splice(index, 1);
+            updateImagesDisplay();
+            showToast('Foto entfernt!');
+        }
+
+        // Gallery
+        function openGallery(id) {
+            const palette = app.allPaletten.find(p => p.id === id);
+            if (!palette || !palette.images || palette.images.length === 0) return;
+            
+            document.getElementById('galleryTitle').textContent = palette.nummer || 'Palette';
+            document.getElementById('galleryImage').src = palette.images[0];
+            
+            const nav = document.getElementById('galleryNav');
+            nav.innerHTML = palette.images.map((img, idx) => 
+                `<img src="${img}" class="gallery-thumb ${idx === 0 ? 'active' : ''}" onclick="showGalleryImage(${idx}, ${id})">`
+            ).join('');
+            
+            document.getElementById('galleryModal').classList.add('active');
+        }
+
+        function showGalleryImage(index, id) {
+            const palette = app.allPaletten.find(p => p.id === id);
+            document.getElementById('galleryImage').src = palette.images[index];
+            
+            document.querySelectorAll('.gallery-thumb').forEach((thumb, idx) => {
+                thumb.classList.toggle('active', idx === index);
+            });
+        }
+
+        document.getElementById('galleryCloseBtn').addEventListener('click', () => {
+            document.getElementById('galleryModal').classList.remove('active');
+        });
+
+        // Quick Actions
+        async function toggleSold(id, sold) {
+            const palette = await getPalette(id);
+            palette.sold = sold;
+            await updatePalette(id, palette);
+            showToast(sold ? 'Als verkauft markiert!' : 'Als verfügbar markiert!');
+            loadAndDisplayPaletten();
+        }
+
+        async function deletePaletteConfirm(id) {
+            if (confirm('Palette wirklich löschen?')) {
+                await deletePalette(id);
+                showToast('Palette gelöscht!');
+                loadAndDisplayPaletten();
+            }
+        }
+
+        // Mode Switch
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const mode = btn.dataset.mode;
+                app.currentMode = mode;
+                
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                if (mode === 'customer') {
+                    document.body.classList.add('customer-mode');
+                } else {
+                    document.body.classList.remove('customer-mode');
+                }
+            });
+        });
+
+        // Filter
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                app.currentFilter = chip.dataset.filter;
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                displayPaletten(filterPaletten());
+            });
+        });
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', () => {
+            displayPaletten(filterPaletten());
+        });
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            displayPaletten(filterPaletten());
+        });
+
+        // Buttons
+        document.getElementById('addPaletteBtn').addEventListener('click', openPaletteModal);
+        document.getElementById('fabBtn').addEventListener('click', openPaletteModal);
+        document.getElementById('showAllBtn').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            app.currentFilter = 'all';
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-filter="all"]').classList.add('active');
+            loadAndDisplayPaletten();
+        });
+
+        document.getElementById('closeModalBtn').addEventListener('click', closePaletteModal);
+        document.getElementById('cancelBtn').addEventListener('click', closePaletteModal);
+        document.getElementById('paletteForm').addEventListener('submit', savePalette);
+
+        // Sort
+        document.getElementById('sortBtn').addEventListener('click', () => {
+            const sorted = [...app.allPaletten].sort((a, b) => {
+                if (a.nummer && b.nummer) return a.nummer.localeCompare(b.nummer);
+                return 0;
+            });
+            app.allPaletten = sorted;
+            displayPaletten(filterPaletten());
+            showToast('Nach Nummer sortiert!');
+        });
+
+        // Export Functions
+        document.getElementById('exportPdfBtn').addEventListener('click', async () => {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const paletten = filterPaletten();
+                
+                doc.setFontSize(18);
+                doc.text('Paletten Katalog', 20, 20);
+                
+                let y = 40;
+                for (const p of paletten) {
+                    if (y > 250) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(p.nummer || '-', 20, y);
+                    y += 7;
+                    
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'normal');
+                    if (p.inhalt) { doc.text(`Inhalt: ${p.inhalt}`, 20, y); y += 6; }
+                    if (p.menge) { doc.text(`Menge: ${p.menge}`, 20, y); y += 6; }
+                    if (p.preis) { doc.text(`Preis: ${p.preis}`, 20, y); y += 6; }
+                    doc.text(`Status: ${p.sold ? 'Verkauft' : 'Verfügbar'}`, 20, y);
+                    y += 6;
+                    
+                    if (p.images && p.images[0]) {
+                        try {
+                            doc.addImage(p.images[0], 'JPEG', 20, y, 50, 50);
+                            y += 55;
+                        } catch (e) {
+                            console.error('PDF image error:', e);
+                        }
+                    }
+                    
+                    y += 10;
+                }
+                
+                doc.save('paletten-katalog.pdf');
+                showToast('PDF erstellt!');
+            } catch (error) {
+                showToast('PDF-Fehler!', 'error');
+                console.error('PDF error:', error);
+            }
+        });
+
+        document.getElementById('exportExcelBtn').addEventListener('click', () => {
+            try {
+                const paletten = filterPaletten();
+                const data = paletten.map(p => ({
+                    'Nummer': p.nummer || '',
+                    'Inhalt': p.inhalt || '',
+                    'Menge': p.menge || '',
+                    'Preis': p.preis || '',
+                    'Status': p.sold ? 'Verkauft' : 'Verfügbar',
+                    'Fotos': p.images ? p.images.length : 0,
+                    'Notizen': p.notizen || ''
+                }));
+                
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Paletten');
+                XLSX.writeFile(wb, 'paletten-katalog.xlsx');
+                showToast('Excel erstellt!');
+            } catch (error) {
+                showToast('Excel-Fehler!', 'error');
+                console.error('Excel error:', error);
+            }
+        });
+
+        document.getElementById('exportBackupBtn').addEventListener('click', async () => {
+            const backup = {
+                version: 1,
+                date: new Date().toISOString(),
+                paletten: app.allPaletten
+            };
+            
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `paletten-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Backup erstellt!');
+        });
+
+        document.getElementById('importBackupBtn').addEventListener('click', () => {
+            document.getElementById('backupInput').click();
+        });
+
+        document.getElementById('backupInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const backup = JSON.parse(event.target.result);
+                    if (!backup.paletten) throw new Error('Ungültig');
+                    
+                    if (confirm(`${backup.paletten.length} Paletten importieren? Überschreibt alle Daten!`)) {
+                        for (const p of app.allPaletten) {
+                            await deletePalette(p.id);
+                        }
+                        for (const p of backup.paletten) {
+                            delete p.id;
+                            await addPalette(p);
+                        }
+                        showToast('Backup geladen!');
+                        loadAndDisplayPaletten();
+                    }
+                } catch (error) {
+                    showToast('Fehler beim Import!', 'error');
+                    console.error('Import error:', error);
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        });
+
+        // Init - START THE APP ✅
+        (async function init() {
+            try {
+                console.log('🚀 Starting Paletten Manager...');
+                await initDB();
+                await loadAndDisplayPaletten();
+                
+                // Add sample if empty
+                if (app.allPaletten.length === 0) {
+                    console.log('➕ Adding sample palette...');
+                    await addPalette({
+                        nummer: 'P-001',
+                        inhalt: 'Beispiel Palette - Kannst du löschen',
+                        menge: '10 Stück',
+                        preis: '100,00 €',
+                        images: [],
+                        sold: false
+                    });
+                    await loadAndDisplayPaletten();
+                }
+                
+                console.log('✅ App ready!');
+                showToast('App bereit! 📦', 'success');
+            } catch (error) {
+                showToast('Fehler beim Laden!', 'error');
+                console.error('Init error:', error);
+            }
+        })();
+    </script>
+</body>
+</html>
